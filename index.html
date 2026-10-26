@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kopfrechnen Trainer - Klasse 3</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Fredoka & Quicksand -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Fredoka', 'cursive', 'sans-serif'],
+            body: ['Quicksand', 'sans-serif']
+          },
+          colors: {
+            brandPurple: '#8B5CF6',
+            brandIndigo: '#6366F1',
+            brandGreen: '#10B981',
+            brandRed: '#EF4444',
+            brandAmber: '#F59E0B',
+            brandSky: '#0284C7'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 50%, #fce7f3 100%);
+      min-height: 100vh;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .font-display {
+      font-family: 'Fredoka', cursive, sans-serif;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 3px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.15);
+    }
+
+    .action-btn {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .action-btn:active {
+      transform: scale(0.94);
+    }
+
+    /* Custom Scrollbar for results list */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center p-3 sm:p-6 min-h-screen">
+
+  <div class="glass-card w-full max-w-lg rounded-[28px] p-5 sm:p-8 relative overflow-hidden flex flex-col my-auto">
+
+    <!-- ================= 1. SETUP / MAIN SCREEN ================= -->
+    <div id="screen-setup" class="space-y-6">
+      
+      <!-- App Header -->
+      <div class="text-center space-y-1">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-brandIndigo to-brandPurple text-white shadow-lg shadow-indigo-200 mb-2">
+          <i class="fa-solid fa-calculator text-2xl"></i>
+        </div>
+        <h1 class="font-display text-3xl font-bold text-slate-800 tracking-wide">Kopfrechnen</h1>
+        <p class="text-sm font-semibold text-slate-500">Grundschule Klasse 3 • Blitzrechnen</p>
+      </div>
+
+      <!-- Difficulty Tier Selector -->
+      <div class="space-y-2">
+        <label class="block font-display text-sm font-bold text-slate-700">Schwierigkeitsgrad:</label>
+        <div class="grid grid-cols-3 gap-2 p-1.5 bg-slate-100/80 rounded-2xl border border-slate-200/60">
+          <button type="button" onclick="setDifficulty('beginner')" id="diff-btn-beginner" 
+                  class="diff-btn font-display font-bold text-sm py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800">
+            🌱 Anfänger
+          </button>
+          <button type="button" onclick="setDifficulty('medium')" id="diff-btn-medium" 
+                  class="diff-btn font-display font-bold text-sm py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800">
+            ⚡ Mittel
+          </button>
+          <button type="button" onclick="setDifficulty('advanced')" id="diff-btn-advanced" 
+                  class="diff-btn font-display font-bold text-sm py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800">
+            🔥 Profi
+          </button>
+        </div>
+      </div>
+
+      <!-- Individual Exercise Type Counters -->
+      <div class="space-y-3">
+        <label class="block font-display text-sm font-bold text-slate-700">Anzahl der Aufgaben je Typ:</label>
+
+        <!-- Addition & Subtraction -->
+        <div class="flex items-center justify-between p-3.5 bg-white/80 rounded-2xl border-2 border-slate-100 shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-brandIndigo flex items-center justify-center text-lg font-bold">
+              <i class="fa-solid fa-plus-minus"></i>
+            </div>
+            <div>
+              <h4 class="font-display font-bold text-slate-800 text-sm sm:text-base">Plus & Minus (+ / -)</h4>
+              <p id="desc-addsub" class="text-xs font-semibold text-slate-400">Bis 100 ohne Übertrag</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjustCount('addsub', -1)" class="action-btn w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">-</button>
+            <span id="count-addsub" class="font-display font-bold text-lg text-slate-800 w-6 text-center">5</span>
+            <button onclick="adjustCount('addsub', 1)" class="action-btn w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">+</button>
+          </div>
+        </div>
+
+        <!-- Multiplication -->
+        <div class="flex items-center justify-between p-3.5 bg-white/80 rounded-2xl border-2 border-slate-100 shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-brandGreen flex items-center justify-center text-lg font-bold">
+              <i class="fa-solid fa-xmark"></i>
+            </div>
+            <div>
+              <h4 class="font-display font-bold text-slate-800 text-sm sm:text-base">Einmaleins (.)</h4>
+              <p id="desc-mult" class="text-xs font-semibold text-slate-400">Einmaleins 1-10</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjustCount('mult', -1)" class="action-btn w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">-</button>
+            <span id="count-mult" class="font-display font-bold text-lg text-slate-800 w-6 text-center">5</span>
+            <button onclick="adjustCount('mult', 1)" class="action-btn w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">+</button>
+          </div>
+        </div>
+
+        <!-- Division -->
+        <div class="flex items-center justify-between p-3.5 bg-white/80 rounded-2xl border-2 border-slate-100 shadow-sm">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-brandAmber flex items-center justify-center text-lg font-bold">
+              <i class="fa-solid fa-divide"></i>
+            </div>
+            <div>
+              <h4 class="font-display font-bold text-slate-800 text-sm sm:text-base">Division (:)</h4>
+              <p id="desc-div" class="text-xs font-semibold text-slate-400">Teilen 1-10</p>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="adjustCount('div', -1)" class="action-btn w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">-</button>
+            <span id="count-div" class="font-display font-bold text-lg text-slate-800 w-6 text-center">5</span>
+            <button onclick="adjustCount('div', 1)" class="action-btn w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex items-center justify-center">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Button with Aggregated Count -->
+      <button onclick="startSession()" class="action-btn w-full bg-gradient-to-r from-brandIndigo to-brandPurple hover:from-indigo-600 hover:to-purple-600 text-white font-display font-bold text-lg py-4 rounded-2xl shadow-lg shadow-indigo-200 flex items-center justify-center space-x-2">
+        <span>Session Starten</span>
+        <span class="bg-white/20 px-2.5 py-0.5 rounded-full text-sm font-semibold" id="total-count-badge">15 Aufgaben</span>
+      </button>
+
+    </div>
+
+
+    <!-- ================= 2. ACTIVE EXERCISE SCREEN ================= -->
+    <div id="screen-exercise" class="hidden space-y-5">
+      
+      <!-- Top Bar: Counter & Level Badge -->
+      <div class="flex justify-between items-center text-sm font-bold text-slate-600">
+        <span class="font-display text-slate-700" id="exercise-progress-text">Aufgabe 1 von 15</span>
+        <span id="exercise-level-badge" class="bg-indigo-100 text-brandIndigo px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">🌱 Anfänger</span>
+      </div>
+
+      <!-- 10-Second Progress Bar -->
+      <div class="space-y-1.5">
+        <div class="flex justify-between items-center text-xs font-bold text-slate-500">
+          <span><i class="fa-solid fa-hourglass-half text-brandAmber mr-1"></i> Restzeit</span>
+          <span class="font-mono text-sm font-bold text-slate-800"><span id="timer-seconds-text">10</span>s</span>
+        </div>
+        <div class="w-full h-3 bg-slate-200/80 rounded-full overflow-hidden p-0.5 border border-slate-300/40">
+          <div id="timer-progress-fill" class="h-full bg-gradient-to-r from-brandAmber to-amber-500 rounded-full transition-all duration-100 ease-linear" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Equation & Solution Card -->
+      <div class="bg-gradient-to-br from-white to-slate-50 rounded-3xl p-8 border-2 border-slate-200/80 shadow-inner text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[190px]">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Aufgabe & Lösung</span>
+        <div id="equation-display" class="font-display text-4xl sm:text-5xl font-extrabold text-slate-800 tracking-wide">
+          7 . 8 = 56
+        </div>
+      </div>
+
+      <!-- Thumbs Up / Thumbs Down Controls -->
+      <div class="grid grid-cols-2 gap-4 pt-2">
+        <button onclick="recordAnswer(false)" class="action-btn bg-rose-50 hover:bg-rose-100 border-3 border-rose-300 text-rose-600 p-5 rounded-2xl shadow-sm flex flex-col items-center justify-center space-y-2 group">
+          <span class="text-4xl group-hover:scale-110 transition-transform">👎</span>
+          <span class="font-display font-bold text-base text-rose-700">Falsch / Schwer</span>
+        </button>
+
+        <button onclick="recordAnswer(true)" class="action-btn bg-emerald-50 hover:bg-emerald-100 border-3 border-emerald-300 text-emerald-600 p-5 rounded-2xl shadow-sm flex flex-col items-center justify-center space-y-2 group">
+          <span class="text-4xl group-hover:scale-110 transition-transform">👍</span>
+          <span class="font-display font-bold text-base text-emerald-700">Richtig</span>
+        </button>
+      </div>
+
+    </div>
+
+
+    <!-- ================= 3. SUMMARY SCREEN ================= -->
+    <div id="screen-summary" class="hidden space-y-5">
+      
+      <!-- Summary Header -->
+      <div class="text-center space-y-1">
+        <div class="w-16 h-16 bg-gradient-to-tr from-amber-400 to-amber-200 text-amber-800 rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg shadow-amber-200 mb-1">
+          🏆
+        </div>
+        <h2 class="font-display text-2xl font-bold text-slate-800">Session Beendet!</h2>
+        <p class="text-xs font-semibold text-slate-500">Super gemacht! Hier sind deine Ergebnisse:</p>
+      </div>
+
+      <!-- Metrics Cards Grid -->
+      <div class="grid grid-cols-2 gap-3">
+        <!-- Thumbs Up Count -->
+        <div class="bg-emerald-50/80 border-2 border-emerald-200 rounded-2xl p-3.5 text-center">
+          <span class="text-2xl">👍</span>
+          <span class="block text-xs font-bold text-emerald-600 uppercase tracking-wider mt-1">Richtig</span>
+          <span id="summary-thumbs-up" class="font-display text-3xl font-bold text-emerald-800">0</span>
+        </div>
+
+        <!-- Thumbs Down Count -->
+        <div class="bg-rose-50/80 border-2 border-rose-200 rounded-2xl p-3.5 text-center">
+          <span class="text-2xl">👎</span>
+          <span class="block text-xs font-bold text-rose-600 uppercase tracking-wider mt-1">Falsch / Zeit</span>
+          <span id="summary-thumbs-down" class="font-display text-3xl font-bold text-rose-800">0</span>
+        </div>
+
+        <!-- Average Time Card -->
+        <div class="col-span-2 bg-indigo-50/80 border-2 border-indigo-200 rounded-2xl p-3.5 flex items-center justify-between px-5">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-100 text-brandIndigo flex items-center justify-center text-xl">
+              ⏱️
+            </div>
+            <div>
+              <span class="block text-xs font-bold text-indigo-500 uppercase tracking-wider">Ø Zeit pro Aufgabe</span>
+              <span id="summary-avg-time" class="font-display text-2xl font-bold text-brandIndigo">0.0s</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-slate-400">Durchschnitt</span>
+        </div>
+      </div>
+
+      <!-- Exercise Breakdown List -->
+      <div class="space-y-2">
+        <label class="block font-display text-xs font-bold text-slate-500 uppercase tracking-wider">Aufgabenübersicht:</label>
+        <div id="summary-breakdown-list" class="max-h-48 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
+          <!-- Dynamically populated breakdown items -->
+        </div>
+      </div>
+
+      <!-- Restart Button -->
+      <button onclick="resetToSetup()" class="action-btn w-full bg-gradient-to-r from-brandIndigo to-brandPurple hover:from-indigo-600 hover:to-purple-600 text-white font-display font-bold text-lg py-3.5 rounded-2xl shadow-lg shadow-indigo-200 flex items-center justify-center space-x-2">
+        <i class="fa-solid fa-rotate-right"></i>
+        <span>Neue Runde</span>
+      </button>
+
+    </div>
+
+  </div>
+
+  <script>
+    // Application State
+    let difficulty = 'beginner';
+    const counts = { addsub: 5, mult: 5, div: 5 };
+
+    let exercises = [];
+    let currentIndex = 0;
+    let sessionResults = []; // Stores { equation, isCorrect, timeTakenSec }
+
+    let timerInterval = null;
+    let timerElapsedMs = 0;
+    let questionStartTime = 0;
+
+    // Helper: Random Integer generator
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Initialize UI on load
+    window.onload = function() {
+      setDifficulty('beginner');
+    };
+
+    // Set Difficulty Tier & update descriptors
+    function setDifficulty(level) {
+      difficulty = level;
+
+      // Update button styling
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        btn.className = "diff-btn font-display font-bold text-sm py-2.5 rounded-xl transition-all text-slate-600 hover:text-slate-800";
+      });
+
+      const activeBtn = document.getElementById(`diff-btn-${level}`);
+      if (activeBtn) {
+        if (level === 'beginner') {
+          activeBtn.className = "diff-btn font-display font-bold text-sm py-2.5 rounded-xl bg-white text-emerald-600 shadow-sm border border-slate-200/80";
+        } else if (level === 'medium') {
+          activeBtn.className = "diff-btn font-display font-bold text-sm py-2.5 rounded-xl bg-white text-brandIndigo shadow-sm border border-slate-200/80";
+        } else if (level === 'advanced') {
+          activeBtn.className = "diff-btn font-display font-bold text-sm py-2.5 rounded-xl bg-white text-rose-600 shadow-sm border border-slate-200/80";
+        }
+      }
+
+      // Update descriptors
+      const descAddSub = document.getElementById('desc-addsub');
+      const descMult = document.getElementById('desc-mult');
+      const descDiv = document.getElementById('desc-div');
+
+      if (level === 'beginner') {
+        descAddSub.innerText = "Bis 100 ohne Übertrag";
+        descMult.innerText = "Einmaleins 1-10";
+        descDiv.innerText = "Teilen 1-10";
+      } else if (level === 'medium') {
+        descAddSub.innerText = "Bis 100 (3-100)";
+        descMult.innerText = "Einmaleins 2-10";
+        descDiv.innerText = "Teilen 2-10";
+      } else if (level === 'advanced') {
+        descAddSub.innerText = "Bis 100 (schwer)";
+        descMult.innerText = "Fokus auf 6,7,8,9er Reihe";
+        descDiv.innerText = "Fokus auf 6,7,8,9er Reihe";
+      }
+    }
+
+    // Counter adjustments (+ / -)
+    function adjustCount(type, delta) {
+      counts[type] = Math.max(0, counts[type] + delta);
+      document.getElementById(`count-${type}`).innerText = counts[type];
+
+      const total = counts.addsub + counts.mult + counts.div;
+      document.getElementById('total-count-badge').innerText = `${total} Aufgaben`;
+    }
+
+    // Math Exercise Generators based on Difficulty Specifications
+    function generateAddSubExercises(count) {
+      for (let i = 0; i < count; i++) {
+        let a, b, isAdd = Math.random() < 0.5;
+
+        if (difficulty === 'beginner') {
+          // Beginner: Addition/Subtraction within 0-100 without hard carryovers
+          if (isAdd) {
+            a = getRandomInt(0, 80);
+            let maxBOnes = 9 - (a % 10);
+            let bOnes = getRandomInt(0, maxBOnes);
+            let bTens = getRandomInt(0, Math.floor((100 - a) / 10));
+            b = bTens * 10 + bOnes;
+          } else {
+            a = getRandomInt(10, 100);
+            let aOnes = a % 10;
+            let bOnes = getRandomInt(0, aOnes);
+            let bTens = getRandomInt(0, Math.floor(a / 10));
+            b = bTens * 10 + bOnes;
+          }
+        } else if (difficulty === 'medium') {
+          // Medium: Addition/Subtraction within 3-100
+          if (isAdd) {
+            a = getRandomInt(3, 80);
+            b = getRandomInt(3, 100 - a);
+          } else {
+            a = getRandomInt(10, 100);
+            b = getRandomInt(3, a - 3 >= 3 ? a - 3 : 3);
+          }
+        } else {
+          // Advanced: Addition/Subtraction within 0-100 with larger multi-digit combinations
+          if (isAdd) {
+            a = getRandomInt(15, 85);
+            b = getRandomInt(15, 100 - a);
+          } else {
+            a = getRandomInt(35, 100);
+            b = getRandomInt(15, a - 5);
+          }
+        }
+
+        let symbol = isAdd ? '+' : '-';
+        let res = isAdd ? a + b : a - b;
+        exercises.push({ equation: `${a} ${symbol} ${b} = ${res}` });
+      }
+    }
+
+    function generateMultExercises(count) {
+      for (let i = 0; i < count; i++) {
+        let a, b;
+
+        if (difficulty === 'beginner') {
+          // Single digits 1-10
+          a = getRandomInt(1, 10);
+          b = getRandomInt(1, 10);
+        } else if (difficulty === 'medium') {
+          // Single digits 2-10
+          a = getRandomInt(2, 10);
+          b = getRandomInt(2, 10);
+        } else {
+          // Advanced: Up to 10s tables. At least 50% from 6s, 7s, 8s, 9s tables.
+          if (i < Math.ceil(count / 2)) {
+            a = [6, 7, 8, 9][getRandomInt(0, 3)];
+            b = getRandomInt(2, 10);
+          } else {
+            a = getRandomInt(2, 10);
+            b = getRandomInt(2, 10);
+          }
+        }
+
+        exercises.push({ equation: `${a} . ${b} = ${a * b}` });
+      }
+    }
+
+    function generateDivExercises(count) {
+      for (let i = 0; i < count; i++) {
+        let divisor, quotient;
+
+        if (difficulty === 'beginner') {
+          // Divisors 1-10
+          divisor = getRandomInt(1, 10);
+          quotient = getRandomInt(1, 10);
+        } else if (difficulty === 'medium') {
+          // Divisors 2-10
+          divisor = getRandomInt(2, 10);
+          quotient = getRandomInt(2, 10);
+        } else {
+          // Advanced: Divisors up to 10. At least 50% from 6s, 7s, 8s, 9s tables.
+          if (i < Math.ceil(count / 2)) {
+            divisor = [6, 7, 8, 9][getRandomInt(0, 3)];
+            quotient = getRandomInt(2, 10);
+          } else {
+            divisor = getRandomInt(2, 10);
+            quotient = getRandomInt(2, 10);
+          }
+        }
+
+        let dividend = divisor * quotient;
+        exercises.push({ equation: `${dividend} : ${divisor} = ${quotient}` });
+      }
+    }
+
+    // Start Session Execution
+    function startSession() {
+      const total = counts.addsub + counts.mult + counts.div;
+      if (total === 0) {
+        alert("Bitte wähle mindestens 1 Aufgabe aus!");
+        return;
+      }
+
+      // Generate exercises & shuffle
+      exercises = [];
+      generateAddSubExercises(counts.addsub);
+      generateMultExercises(counts.mult);
+      generateDivExercises(counts.div);
+      exercises.sort(() => Math.random() - 0.5);
+
+      currentIndex = 0;
+      sessionResults = [];
+
+      // Switch screens
+      document.getElementById('screen-setup').classList.add('hidden');
+      document.getElementById('screen-summary').classList.add('hidden');
+      document.getElementById('screen-exercise').classList.remove('hidden');
+
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      if (currentIndex >= exercises.length) {
+        finishSession();
+        return;
+      }
+
+      const q = exercises[currentIndex];
+      document.getElementById('equation-display').innerText = q.equation;
+      document.getElementById('exercise-progress-text').innerText = `Aufgabe ${currentIndex + 1} von ${exercises.length}`;
+
+      // Update difficulty badge
+      const badgeEl = document.getElementById('exercise-level-badge');
+      if (difficulty === 'beginner') {
+        badgeEl.innerText = "🌱 Anfänger";
+        badgeEl.className = "bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold tracking-wider";
+      } else if (difficulty === 'medium') {
+        badgeEl.innerText = "⚡ Mittel";
+        badgeEl.className = "bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-bold tracking-wider";
+      } else {
+        badgeEl.innerText = "🔥 Profi";
+        badgeEl.className = "bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold tracking-wider";
+      }
+
+      startTimer();
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timerElapsedMs = 0;
+      questionStartTime = Date.now();
+      updateTimerUI(0);
+
+      timerInterval = setInterval(() => {
+        timerElapsedMs += 100;
+        updateTimerUI(timerElapsedMs);
+
+        // Auto Timeout at 10 seconds (counts as Thumbs Down)
+        if (timerElapsedMs >= 10000) {
+          clearInterval(timerInterval);
+          recordAnswer(false, 10.0);
+        }
+      }, 100);
+    }
+
+    function updateTimerUI(elapsedMs) {
+      const remainingSec = Math.max(0, Math.ceil((10000 - elapsedMs) / 1000));
+      document.getElementById('timer-seconds-text').innerText = remainingSec;
+
+      const fillPct = Math.max(0, ((10000 - elapsedMs) / 10000) * 100);
+      document.getElementById('timer-progress-fill').style.width = `${fillPct}%`;
+    }
+
+    function recordAnswer(isThumbsUp, exactTimeSec = null) {
+      clearInterval(timerInterval);
+
+      const timeTaken = exactTimeSec !== null ? exactTimeSec : ((Date.now() - questionStartTime) / 1000);
+
+      sessionResults.push({
+        equation: exercises[currentIndex].equation,
+        isCorrect: isThumbsUp,
+        timeTakenSec: Math.min(10, timeTaken)
+      });
+
+      currentIndex++;
+      loadQuestion();
+    }
+
+    // Finish Session & Show Summary
+    function finishSession() {
+      clearInterval(timerInterval);
+
+      document.getElementById('screen-exercise').classList.add('hidden');
+      document.getElementById('screen-summary').classList.remove('hidden');
+
+      const thumbsUpCount = sessionResults.filter(r => r.isCorrect).length;
+      const thumbsDownCount = sessionResults.filter(r => !r.isCorrect).length;
+
+      const totalTime = sessionResults.reduce((acc, curr) => acc + curr.timeTakenSec, 0);
+      const avgTime = sessionResults.length > 0 ? (totalTime / sessionResults.length).toFixed(1) : "0.0";
+
+      document.getElementById('summary-thumbs-up').innerText = thumbsUpCount;
+      document.getElementById('summary-thumbs-down').innerText = thumbsDownCount;
+      document.getElementById('summary-avg-time').innerText = `${avgTime}s`;
+
+      // Trigger Confetti if mostly thumbs up
+      if (thumbsUpCount > thumbsDownCount) {
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      }
+
+      // Populate scrollable exercise breakdown
+      const listContainer = document.getElementById('summary-breakdown-list');
+      listContainer.innerHTML = '';
+
+      sessionResults.forEach((res) => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-3 bg-white/80 rounded-xl border border-slate-200/80 text-sm font-semibold shadow-sm";
+
+        const icon = res.isCorrect ? '👍' : '👎';
+        const badgeColor = res.isCorrect ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600';
+
+        item.innerHTML = `
+          <span class="font-display font-bold text-slate-800 text-base">${res.equation}</span>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs text-slate-400 font-mono">${res.timeTakenSec.toFixed(1)}s</span>
+            <span class="w-8 h-8 rounded-lg ${badgeColor} flex items-center justify-center text-base">${icon}</span>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function resetToSetup() {
+      clearInterval(timerInterval);
+      document.getElementById('screen-exercise').classList.add('hidden');
+      document.getElementById('screen-summary').classList.add('hidden');
+      document.getElementById('screen-setup').classList.remove('hidden');
+    }
+  </script>
+
+</body>
+</html>
