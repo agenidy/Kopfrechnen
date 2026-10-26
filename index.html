@@ -268,6 +268,20 @@
           </div>
           <span class="text-xs font-bold text-slate-400">Durchschnitt</span>
         </div>
+
+        <!-- Session Overall Time Card -->
+        <div class="col-span-2 bg-purple-50/80 border-2 border-purple-200 rounded-2xl p-3.5 flex items-center justify-between px-5">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 text-brandPurple flex items-center justify-center text-xl">
+              ⏳
+            </div>
+            <div>
+              <span class="block text-xs font-bold text-purple-600 uppercase tracking-wider">Gesamtzeit</span>
+              <span id="summary-total-time" class="font-display text-2xl font-bold text-brandPurple">0.0s</span>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-slate-400">Gesamtdauer</span>
+        </div>
       </div>
 
       <!-- Exercise Breakdown List -->
@@ -570,6 +584,11 @@
       document.getElementById('summary-thumbs-up').innerText = thumbsUpCount;
       document.getElementById('summary-thumbs-down').innerText = thumbsDownCount;
       document.getElementById('summary-avg-time').innerText = `${avgTime}s`;
+
+      const formattedTotal = totalTime >= 60 
+        ? `${Math.floor(totalTime / 60)}m ${Math.round(totalTime % 60)}s` 
+        : `${totalTime.toFixed(1)}s`;
+      document.getElementById('summary-total-time').innerText = formattedTotal;
 
       // Trigger Confetti if mostly thumbs up
       if (thumbsUpCount > thumbsDownCount) {
