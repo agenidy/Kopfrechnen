@@ -1,477 +1,712 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kopfrechnen Trainer - Grundschule</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Fredoka & Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kopfrechnen - Grundschule Klasse 3</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --success: #10b981;
+      --danger: #ef4444;
+      --border: #e5e7eb;
+    }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        display: ['Fredoka', 'sans-serif'],
-                        body: ['Inter', 'sans-serif']
-                    },
-                    colors: {
-                        brandBlue: '#3B82F6',
-                        brandGreen: '#10B981',
-                        brandRed: '#EF4444',
-                        brandAmber: '#F59E0B',
-                        brandPurple: '#8B5CF6'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6;
-            user-select: none;
-        }
-        .font-display {
-            font-family: 'Fredoka', sans-serif;
-        }
-        .action-btn {
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-        }
-        .action-btn:active {
-            transform: scale(0.95);
-        }
-    </style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app-container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 550px;
+      border-radius: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      text-align: center;
+      color: var(--primary);
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .section-label {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    /* Difficulty Tiers */
+    .difficulty-selector {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .diff-btn {
+      padding: 10px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      background: #f9fafb;
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .diff-btn.selected {
+      border-color: var(--primary);
+      background: #eef2ff;
+      color: var(--primary);
+    }
+
+    /* Exercise Specific Counters */
+    .exercise-configs {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .config-card {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .config-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .config-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .config-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .counter-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .counter-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .counter-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .counter-value {
+      font-weight: 700;
+      font-size: 1.05rem;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* Active Exercise Screen */
+    .exercise-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 100%;
+      transition: width 0.1s linear;
+    }
+
+    .exercise-display {
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 20px;
+      padding: 30px 10px;
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    .equation {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: 2px;
+    }
+
+    .timer-display {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ef4444;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .action-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .action-btn {
+      border: none;
+      border-radius: 18px;
+      padding: 20px;
+      font-size: 2.5rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.1s;
+    }
+
+    .action-btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn-up {
+      background-color: #ecfdf5;
+      border: 2px solid #10b981;
+    }
+
+    .btn-down {
+      background-color: #fef2f2;
+      border: 2px solid #ef4444;
+    }
+
+    /* Summary Screen */
+    .summary-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: #f9fafb;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+
+    .metric-card.full-width {
+      grid-column: span 2;
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .history-container {
+      max-height: 220px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px;
+      background: #fafafa;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-eq {
+      font-family: monospace;
+      font-size: 1.05rem;
+    }
+
+    .history-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .history-time {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
 </head>
-<body class="min-h-screen text-slate-800 flex flex-col justify-between">
+<body>
 
-    <!-- HEADER -->
-    <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-20">
-        <div class="max-w-2xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="resetToHome()">
-                <div class="bg-brandBlue text-white w-10 h-10 rounded-2xl flex items-center justify-center font-display font-bold text-2xl shadow">
-                    <i class="fa-solid fa-calculator"></i>
-                </div>
-                <div>
-                    <h1 class="font-display text-xl font-bold text-slate-800 leading-tight">Kopfrechnen Trainer</h1>
-                    <p class="text-xs text-slate-500 font-semibold">Schnell-Check & Übung</p>
-                </div>
-            </div>
-            <div id="header-session-info" class="hidden text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full">
-                Aufgabe <span id="current-q-num">1</span> / <span id="total-q-num">10</span>
-            </div>
-        </div>
-    </header>
+<div class="app-container">
 
-    <!-- MAIN CONTAINER -->
-    <main class="max-w-2xl mx-auto px-4 py-8 flex-grow w-full flex flex-col justify-center">
+  <!-- START / SETUP SCREEN -->
+  <div id="screen-setup" class="screen active">
+    <div>
+      <h1>Kopfrechnen</h1>
+      <p class="subtitle">Klasse 3 Grundschule</p>
+    </div>
 
-        <!-- ================= 1. SETUP / HOME SCREEN ================= -->
-        <div id="screen-setup" class="bg-white rounded-3xl p-6 md:p-8 border-2 border-slate-200 shadow-xl space-y-6">
-            <div class="text-center space-y-2">
-                <span class="bg-blue-100 text-brandBlue font-display text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">Kopfrechnen</span>
-                <h2 class="font-display text-3xl font-extrabold text-slate-800">Übungssession starten</h2>
-                <p class="text-slate-500 text-sm">Wähle die Aufgabentypen und die Anzahl der Fragen für dein Training.</p>
-            </div>
+    <div>
+      <div class="section-label">Schwierigkeitsgrad</div>
+      <div class="difficulty-selector">
+        <button class="diff-btn selected" onclick="setDifficulty('beginner')">Anfänger</button>
+        <button class="diff-btn" onclick="setDifficulty('medium')">Mittel</button>
+        <button class="diff-btn" onclick="setDifficulty('advanced')">Profi</button>
+      </div>
+    </div>
 
-            <!-- Exercise Type Toggles -->
-            <div class="space-y-3">
-                <label class="block font-display font-bold text-slate-700 text-sm">Aufgabentypen (mindestens einer):</label>
-                
-                <!-- Option 1: Add/Sub up to 100 -->
-                <div onclick="toggleOption('type-addsub')" id="option-addsub" class="option-card border-2 border-brandBlue bg-blue-50/50 rounded-2xl p-4 cursor-pointer flex items-center justify-between transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-brandBlue flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-plus-minus"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-display font-bold text-slate-800 text-base">Plus & Minus bis 100</h4>
-                            <p class="text-xs text-slate-500">Addition und Subtraktion im 100er-Raum</p>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="type-addsub" checked class="w-5 h-5 text-brandBlue rounded accent-brandBlue pointer-events-none">
-                </div>
-
-                <!-- Option 2: Single-Digit Multiplication -->
-                <div onclick="toggleOption('type-mult')" id="option-mult" class="option-card border-2 border-slate-200 bg-white rounded-2xl p-4 cursor-pointer flex items-center justify-between transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-brandGreen flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-xmark"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-display font-bold text-slate-800 text-base">Einmaleins (1x1)</h4>
-                            <p class="text-xs text-slate-500">Multiplikation von einstelligen Zahlen</p>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="type-mult" class="w-5 h-5 text-brandGreen rounded accent-brandGreen pointer-events-none">
-                </div>
-
-                <!-- Option 3: Single-Digit Division -->
-                <div onclick="toggleOption('type-div')" id="option-div" class="option-card border-2 border-slate-200 bg-white rounded-2xl p-4 cursor-pointer flex items-center justify-between transition">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-brandAmber flex items-center justify-center text-xl font-bold">
-                            <i class="fa-solid fa-divide"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-display font-bold text-slate-800 text-base">Division (Teilen)</h4>
-                            <p class="text-xs text-slate-500">Teilen durch einstellige Zahlen</p>
-                        </div>
-                    </div>
-                    <input type="checkbox" id="type-div" class="w-5 h-5 text-brandAmber rounded accent-brandAmber pointer-events-none">
-                </div>
-            </div>
-
-            <!-- Number of Questions Selector -->
-            <div class="space-y-3 pt-2">
-                <label class="block font-display font-bold text-slate-700 text-sm">Anzahl der Aufgaben:</label>
-                <div class="grid grid-cols-4 gap-3">
-                    <button type="button" onclick="selectQuestionCount(5)" id="count-btn-5" class="count-btn py-3 rounded-2xl font-display font-bold text-sm border-2 border-slate-200 hover:border-brandBlue transition">5</button>
-                    <button type="button" onclick="selectQuestionCount(10)" id="count-btn-10" class="count-btn py-3 rounded-2xl font-display font-bold text-sm border-2 border-brandBlue bg-blue-50 text-brandBlue transition">10</button>
-                    <button type="button" onclick="selectQuestionCount(15)" id="count-btn-15" class="count-btn py-3 rounded-2xl font-display font-bold text-sm border-2 border-slate-200 hover:border-brandBlue transition">15</button>
-                    <button type="button" onclick="selectQuestionCount(20)" id="count-btn-20" class="count-btn py-3 rounded-2xl font-display font-bold text-sm border-2 border-slate-200 hover:border-brandBlue transition">20</button>
-                </div>
-            </div>
-
-            <!-- Error Notification -->
-            <div id="setup-error" class="hidden text-rose-500 font-bold text-xs text-center">
-                Bitte wähle mindestens einen Aufgabentyp aus!
-            </div>
-
-            <!-- Start Button -->
-            <button onclick="startSession()" class="action-btn w-full bg-brandBlue hover:bg-blue-600 text-white font-display font-bold text-lg py-4 rounded-2xl shadow-lg shadow-blue-200 flex items-center justify-center space-x-2">
-                <span>Session Starten</span>
-                <i class="fa-solid fa-play"></i>
-            </button>
+    <div>
+      <div class="section-label">Anzahl der Aufgaben</div>
+      <div class="exercise-configs">
+        <div class="config-card">
+          <div class="config-info">
+            <span class="config-title">Plus & Minus (+ / -)</span>
+            <span class="config-desc" id="addsub-desc">Bis 100 ohne Übertrag</span>
+          </div>
+          <div class="counter-control">
+            <button class="counter-btn" onclick="adjustCount('addsub', -1)">-</button>
+            <span class="counter-value" id="count-addsub">5</span>
+            <button class="counter-btn" onclick="adjustCount('addsub', 1)">+</button>
+          </div>
         </div>
 
-
-        <!-- ================= 2. ACTIVE EXERCISE SCREEN ================= -->
-        <div id="screen-exercise" class="hidden space-y-6">
-            
-            <!-- Progress Bar & Timer Header -->
-            <div class="bg-white rounded-3xl p-5 border-2 border-slate-200 shadow-sm space-y-3">
-                <div class="flex justify-between items-center text-sm font-bold text-slate-600">
-                    <span class="flex items-center"><i class="fa-solid fa-hourglass-half mr-2 text-brandAmber"></i> Zeit: <span id="timer-counter" class="ml-1 font-mono text-base text-slate-900">1</span>s / 10s</span>
-                    <span id="exercise-badge-type" class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold">Addition</span>
-                </div>
-                <!-- 10-second Progress Bar -->
-                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div id="timer-progress-bar" class="h-full bg-brandAmber transition-all duration-100 ease-linear" style="width: 10%;"></div>
-                </div>
-            </div>
-
-            <!-- Main Exercise & Result Display Card -->
-            <div class="bg-white rounded-3xl p-10 border-4 border-slate-200 shadow-xl text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[220px]">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Aufgabe & Lösung</span>
-                
-                <div id="exercise-text" class="font-display text-4xl sm:text-6xl font-extrabold text-slate-800 tracking-wide">
-                    45 + 38 = 83
-                </div>
-            </div>
-
-            <!-- Interaction Buttons: Thumbs Up / Thumbs Down -->
-            <div class="grid grid-cols-2 gap-4">
-                <!-- Thumbs Down (Incorrect / Needs Practice) -->
-                <button onclick="recordAnswer(false)" class="action-btn bg-rose-50 hover:bg-rose-100 border-4 border-rose-300 text-rose-600 p-6 rounded-3xl shadow-md flex flex-col items-center justify-center space-y-2 group">
-                    <i class="fa-solid fa-thumbs-down text-4xl sm:text-5xl group-hover:scale-110 transition"></i>
-                    <span class="font-display font-bold text-lg sm:text-xl">Falsch / Schwer 👎</span>
-                </button>
-
-                <!-- Thumbs Up (Correct / Mastered) -->
-                <button onclick="recordAnswer(true)" class="action-btn bg-emerald-50 hover:bg-emerald-100 border-4 border-emerald-300 text-emerald-600 p-6 rounded-3xl shadow-md flex flex-col items-center justify-center space-y-2 group">
-                    <i class="fa-solid fa-thumbs-up text-4xl sm:text-5xl group-hover:scale-110 transition"></i>
-                    <span class="font-display font-bold text-lg sm:text-xl">Richtig 👍</span>
-                </button>
-            </div>
+        <div class="config-card">
+          <div class="config-info">
+            <span class="config-title">Einmaleins (.)</span>
+            <span class="config-desc" id="mult-desc">Einmaleins 1-10</span>
+          </div>
+          <div class="counter-control">
+            <button class="counter-btn" onclick="adjustCount('mult', -1)">-</button>
+            <span class="counter-value" id="count-mult">5</span>
+            <button class="counter-btn" onclick="adjustCount('mult', 1)">+</button>
+          </div>
         </div>
 
-
-        <!-- ================= 3. END OF SESSION SUMMARY SCREEN ================= -->
-        <div id="screen-summary" class="hidden space-y-6">
-            <div class="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-200 shadow-xl text-center space-y-6">
-                
-                <div class="w-20 h-20 bg-amber-100 text-brandAmber rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner">
-                    <i class="fa-solid fa-award"></i>
-                </div>
-
-                <div>
-                    <h2 class="font-display text-3xl font-extrabold text-slate-800">Session Beendet!</h2>
-                    <p class="text-slate-500 text-sm mt-1">Hier ist deine Zusammenfassung der Ergebnisse</p>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Thumbs Up Count -->
-                    <div class="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 text-center">
-                        <i class="fa-solid fa-thumbs-up text-2xl text-brandGreen mb-1"></i>
-                        <span class="block text-xs font-semibold text-slate-500">Richtig gelöst</span>
-                        <span id="summary-thumbs-up" class="font-display text-3xl font-bold text-emerald-700">0</span>
-                    </div>
-
-                    <!-- Thumbs Down Count -->
-                    <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 text-center">
-                        <i class="fa-solid fa-thumbs-down text-2xl text-brandRed mb-1"></i>
-                        <span class="block text-xs font-semibold text-slate-500">Nicht geschafft</span>
-                        <span id="summary-thumbs-down" class="font-display text-3xl font-bold text-rose-700">0</span>
-                    </div>
-                </div>
-
-                <!-- Average Time Stat -->
-                <div class="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 flex justify-between items-center text-left">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-brandBlue flex items-center justify-center text-xl">
-                            <i class="fa-solid fa-stopwatch"></i>
-                        </div>
-                        <div>
-                            <span class="block text-xs font-semibold text-slate-500">Durchschnittliche Lösungszeit</span>
-                            <span id="summary-avg-time" class="font-display text-2xl font-bold text-brandBlue">0.0 s</span>
-                        </div>
-                    </div>
-                    <span class="text-xs font-bold text-slate-400">pro Aufgabe</span>
-                </div>
-
-                <!-- Restart Button -->
-                <button onclick="resetToHome()" class="action-btn w-full bg-brandBlue hover:bg-blue-600 text-white font-display font-bold text-lg py-4 rounded-2xl shadow-lg shadow-blue-200 flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    <span>Neue Session Starten</span>
-                </button>
-            </div>
+        <div class="config-card">
+          <div class="config-info">
+            <span class="config-title">Division (:)</span>
+            <span class="config-desc" id="div-desc">Teilen 1-10</span>
+          </div>
+          <div class="counter-control">
+            <button class="counter-btn" onclick="adjustCount('div', -1)">-</button>
+            <span class="counter-value" id="count-div">5</span>
+            <button class="counter-btn" onclick="adjustCount('div', 1)">+</button>
+          </div>
         </div>
+      </div>
+    </div>
 
-    </main>
+    <button class="btn-primary" onclick="startSession()">Starten (<span id="total-count-label">15</span> Aufgaben)</button>
+  </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400 font-semibold">
-        Kopfrechnen Trainer • Grundschule 3. Klasse
-    </footer>
+  <!-- ACTIVE EXERCISE SCREEN -->
+  <div id="screen-exercise" class="screen">
+    <div>
+      <div class="exercise-header">
+        <span id="exercise-counter">Aufgabe 1 von 15</span>
+        <span id="level-badge" style="color: var(--primary);">Anfänger</span>
+      </div>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar-fill"></div>
+      </div>
+    </div>
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // Session Configuration & State
-        const sessionState = {
-            selectedTypes: ['addsub'], // 'addsub', 'mult', 'div'
-            questionCount: 10,
-            currentQuestionIndex: 0,
-            questions: [],
-            answers: [], // Array of { isCorrect: bool, timeSpentSeconds: float }
-            
-            // Timer variables
-            timerInterval: null,
-            timerElapsedMs: 0,
-            questionStartTime: 0
-        };
+    <div class="exercise-display">
+      <div id="equation-text" class="equation">24 + 15 = 39</div>
+    </div>
 
-        // --- SETUP SCREEN FUNCTIONS ---
+    <div class="timer-display">
+      ⏱️ <span id="timer-seconds">10</span>s
+    </div>
 
-        function toggleOption(inputId) {
-            const checkbox = document.getElementById(inputId);
-            checkbox.checked = !checkbox.checked;
-            
-            const cardId = inputId.replace('type-', 'option-');
-            const card = document.getElementById(cardId);
-            
-            if (checkbox.checked) {
-                card.classList.remove('border-slate-200', 'bg-white');
-                card.classList.add('border-brandBlue', 'bg-blue-50/50');
-            } else {
-                card.classList.add('border-slate-200', 'bg-white');
-                card.classList.remove('border-brandBlue', 'bg-blue-50/50');
-            }
-            
-            updateSelectedTypes();
+    <div class="action-buttons">
+      <button class="action-btn btn-up" onclick="recordAnswer('up')">👍</button>
+      <button class="action-btn btn-down" onclick="recordAnswer('down')">👎</button>
+    </div>
+  </div>
+
+  <!-- SUMMARY SCREEN -->
+  <div id="screen-summary" class="screen">
+    <div>
+      <h1>Zusammenfassung</h1>
+      <p class="subtitle">Ergebnis der Übungsrunde</p>
+    </div>
+
+    <div class="summary-metrics">
+      <div class="metric-card">
+        <div class="metric-label">Richtig (👍)</div>
+        <div class="metric-value" style="color: var(--success);" id="summary-thumbs-up">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Falsch (👎)</div>
+        <div class="metric-value" style="color: var(--danger);" id="summary-thumbs-down">0</div>
+      </div>
+      <div class="metric-card full-width">
+        <div class="metric-label">Durchschnittliche Lösungszeit</div>
+        <div class="metric-value" style="color: var(--primary);" id="summary-avg-time">0.0s</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom: 8px;">Aufgabenübersicht</div>
+      <div class="history-container" id="history-list">
+        <!-- Exercise breakdown list inserted here -->
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="resetToSetup()">Neue Runde</button>
+  </div>
+
+</div>
+
+<script>
+  // Application State
+  let difficulty = 'beginner';
+  let counts = { addsub: 5, mult: 5, div: 5 };
+
+  let exercises = [];
+  let currentIndex = 0;
+  let sessionResults = [];
+  
+  let timerInterval = null;
+  let timeLeft = 10;
+  let questionStartTime = 0;
+
+  // Set difficulty level & update descriptions
+  function setDifficulty(level) {
+    difficulty = level;
+    document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('selected'));
+    event.target.classList.add('selected');
+
+    const addsubDesc = document.getElementById('addsub-desc');
+    const multDesc = document.getElementById('mult-desc');
+    const divDesc = document.getElementById('div-desc');
+
+    if (level === 'beginner') {
+      addsubDesc.innerText = 'Bis 100 ohne Übertrag';
+      multDesc.innerText = 'Einmaleins 1-10';
+      divDesc.innerText = 'Teilen 1-10';
+    } else if (level === 'medium') {
+      addsubDesc.innerText = 'Bis 100 mit Übertrag';
+      multDesc.innerText = 'Einmaleins 2-10';
+      divDesc.innerText = 'Teilen 2-10';
+    } else if (level === 'advanced') {
+      addsubDesc.innerText = 'Bis 100 (schwere Zahlen)';
+      multDesc.innerText = 'Focus 6, 7, 8, 9er Reihe';
+      divDesc.innerText = 'Focus 6, 7, 8, 9er Reihe';
+    }
+  }
+
+  function adjustCount(type, delta) {
+    counts[type] = Math.max(0, counts[type] + delta);
+    document.getElementById(`count-${type}`).innerText = counts[type];
+    
+    const total = counts.addsub + counts.mult + counts.div;
+    document.getElementById('total-count-label').innerText = total;
+  }
+
+  function startSession() {
+    const total = counts.addsub + counts.mult + counts.div;
+    if (total === 0) {
+      alert('Bitte wählen Sie mindestens 1 Aufgabe aus!');
+      return;
+    }
+
+    // Generate exercises list
+    exercises = [];
+    generateAddSubExercises(counts.addsub);
+    generateMultExercises(counts.mult);
+    generateDivExercises(counts.div);
+
+    // Shuffle exercises
+    exercises.sort(() => Math.random() - 0.5);
+
+    currentIndex = 0;
+    sessionResults = [];
+
+    showScreen('screen-exercise');
+    loadQuestion();
+  }
+
+  /* Math Generation Algorithms */
+
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function generateAddSubExercises(count) {
+    for (let i = 0; i < count; i++) {
+      let a, b, isAdd = Math.random() < 0.5;
+
+      if (difficulty === 'beginner') {
+        if (isAdd) {
+          a = getRandomInt(0, 80);
+          let maxBOnes = 9 - (a % 10);
+          let bOnes = getRandomInt(0, maxBOnes);
+          let bTens = getRandomInt(0, Math.floor((100 - a) / 10));
+          b = bTens * 10 + bOnes;
+        } else {
+          a = getRandomInt(10, 100);
+          let aOnes = a % 10;
+          let bOnes = getRandomInt(0, aOnes);
+          let bTens = getRandomInt(0, Math.floor(a / 10));
+          b = bTens * 10 + bOnes;
         }
-
-        function updateSelectedTypes() {
-            sessionState.selectedTypes = [];
-            if (document.getElementById('type-addsub').checked) sessionState.selectedTypes.push('addsub');
-            if (document.getElementById('type-mult').checked) sessionState.selectedTypes.push('mult');
-            if (document.getElementById('type-div').checked) sessionState.selectedTypes.push('div');
+      } else {
+        // Medium & Advanced
+        let minVal = difficulty === 'medium' ? 3 : 0;
+        if (isAdd) {
+          a = getRandomInt(minVal, 80);
+          b = getRandomInt(minVal, 100 - a);
+        } else {
+          a = getRandomInt(10, 100);
+          b = getRandomInt(minVal, a);
         }
+      }
 
-        function selectQuestionCount(count) {
-            sessionState.questionCount = count;
-            document.querySelectorAll('.count-btn').forEach(btn => {
-                btn.className = "count-btn py-3 rounded-2xl font-display font-bold text-sm border-2 border-slate-200 hover:border-brandBlue transition";
-            });
-            const activeBtn = document.getElementById(`count-btn-${count}`);
-            if (activeBtn) {
-                activeBtn.className = "count-btn py-3 rounded-2xl font-display font-bold text-sm border-2 border-brandBlue bg-blue-50 text-brandBlue transition";
-            }
-        }
+      let symbol = isAdd ? '+' : '-';
+      let res = isAdd ? a + b : a - b;
+      exercises.push({ equation: `${a} ${symbol} ${b} = ${res}` });
+    }
+  }
 
-        // --- EXERCISE GENERATOR ---
+  function generateMultExercises(count) {
+    for (let i = 0; i < count; i++) {
+      let a, b;
+      if (difficulty === 'advanced' && i < Math.ceil(count / 2)) {
+        a = [6, 7, 8, 9][getRandomInt(0, 3)];
+        b = getRandomInt(1, 10);
+      } else {
+        let minVal = difficulty === 'beginner' ? 1 : 2;
+        a = getRandomInt(minVal, 10);
+        b = getRandomInt(minVal, 10);
+      }
+      exercises.push({ equation: `${a} . ${b} = ${a * b}` });
+    }
+  }
 
-        function generateExercise(type) {
-            let num1, num2, op, result, badgeLabel;
+  function generateDivExercises(count) {
+    for (let i = 0; i < count; i++) {
+      let divisor, quotient;
+      if (difficulty === 'advanced' && i < Math.ceil(count / 2)) {
+        divisor = [6, 7, 8, 9][getRandomInt(0, 3)];
+        quotient = getRandomInt(1, 10);
+      } else {
+        let minVal = difficulty === 'beginner' ? 1 : 2;
+        divisor = getRandomInt(minVal, 10);
+        quotient = getRandomInt(minVal, 10);
+      }
+      let dividend = divisor * quotient;
+      exercises.push({ equation: `${dividend} : ${divisor} = ${quotient}` });
+    }
+  }
 
-            if (type === 'addsub') {
-                const isAddition = Math.random() > 0.5;
-                if (isAddition) {
-                    num1 = Math.floor(Math.random() * 80) + 10;
-                    num2 = Math.floor(Math.random() * (100 - num1 - 5)) + 5;
-                    result = num1 + num2;
-                    op = '+';
-                } else {
-                    num1 = Math.floor(Math.random() * 85) + 15;
-                    num2 = Math.floor(Math.random() * (num1 - 5)) + 5;
-                    result = num1 - num2;
-                    op = '-';
-                }
-                badgeLabel = isAddition ? 'Addition bis 100' : 'Subtraktion bis 100';
+  /* Exercise Engine & Timer */
 
-            } else if (type === 'mult') {
-                num1 = Math.floor(Math.random() * 9) + 2; // 2..10
-                num2 = Math.floor(Math.random() * 9) + 2; // 2..10
-                result = num1 * num2;
-                op = '•';
-                badgeLabel = 'Einmaleins (1x1)';
+  function loadQuestion() {
+    if (currentIndex >= exercises.length) {
+      finishSession();
+      return;
+    }
 
-            } else if (type === 'div') {
-                num2 = Math.floor(Math.random() * 8) + 2; // divisor 2..9
-                result = Math.floor(Math.random() * 9) + 2; // quotient 2..10
-                num1 = num2 * result; // dividend
-                op = ':';
-                badgeLabel = 'Division';
-            }
+    const currentEx = exercises[currentIndex];
+    document.getElementById('equation-text').innerText = currentEx.equation;
+    document.getElementById('exercise-counter').innerText = `Aufgabe ${currentIndex + 1} von ${exercises.length}`;
+    
+    // Level badge label
+    const badgeMap = { beginner: 'Anfänger', medium: 'Mittel', advanced: 'Profi' };
+    document.getElementById('level-badge').innerText = badgeMap[difficulty];
 
-            return {
-                displayText: `${num1} ${op} ${num2} = ${result}`,
-                typeBadge: badgeLabel
-            };
-        }
+    // Reset Timer
+    clearInterval(timerInterval);
+    timeLeft = 10;
+    questionStartTime = Date.now();
+    updateTimerDisplay();
 
-        // --- SESSION EXECUTION ---
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerDisplay();
 
-        function startSession() {
-            updateSelectedTypes();
-            const errorEl = document.getElementById('setup-error');
-            
-            if (sessionState.selectedTypes.length === 0) {
-                errorEl.classList.remove('hidden');
-                return;
-            }
-            errorEl.classList.add('hidden');
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        recordAnswer('down', true); // Auto timeout = thumbs down
+      }
+    }, 1000);
+  }
 
-            // Generate questions
-            sessionState.questions = [];
-            sessionState.answers = [];
-            sessionState.currentQuestionIndex = 0;
+  function updateTimerDisplay() {
+    document.getElementById('timer-seconds').innerText = timeLeft;
+    const progressPercent = (timeLeft / 10) * 100;
+    document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+  }
 
-            for (let i = 0; i < sessionState.questionCount; i++) {
-                const randomType = sessionState.selectedTypes[Math.floor(Math.random() * sessionState.selectedTypes.length)];
-                sessionState.questions.push(generateExercise(randomType));
-            }
+  function recordAnswer(type, isTimeout = false) {
+    clearInterval(timerInterval);
+    const timeSpent = Math.min(10, (Date.now() - questionStartTime) / 1000);
 
-            // UI updates
-            document.getElementById('screen-setup').classList.add('hidden');
-            document.getElementById('screen-summary').classList.add('hidden');
-            document.getElementById('screen-exercise').classList.remove('hidden');
-            document.getElementById('header-session-info').classList.remove('hidden');
+    sessionResults.push({
+      equation: exercises[currentIndex].equation,
+      result: type, // 'up' or 'down'
+      time: timeSpent,
+      timeout: isTimeout
+    });
 
-            document.getElementById('total-q-num').innerText = sessionState.questionCount;
+    currentIndex++;
+    loadQuestion();
+  }
 
-            showQuestion(0);
-        }
+  /* Summary Engine */
 
-        function showQuestion(index) {
-            if (index >= sessionState.questionCount) {
-                finishSession();
-                return;
-            }
+  function finishSession() {
+    showScreen('screen-summary');
 
-            sessionState.currentQuestionIndex = index;
-            document.getElementById('current-q-num').innerText = index + 1;
+    const thumbsUpCount = sessionResults.filter(r => r.result === 'up').length;
+    const thumbsDownCount = sessionResults.filter(r => r.result === 'down').length;
 
-            const q = sessionState.questions[index];
-            document.getElementById('exercise-text').innerText = q.displayText;
-            document.getElementById('exercise-badge-type').innerText = q.typeBadge;
+    const totalTime = sessionResults.reduce((acc, r) => acc + r.time, 0);
+    const avgTime = sessionResults.length > 0 ? (totalTime / sessionResults.length).toFixed(1) : '0.0';
 
-            // Start 10-second timer
-            startTimer();
-        }
+    document.getElementById('summary-thumbs-up').innerText = thumbsUpCount;
+    document.getElementById('summary-thumbs-down').innerText = thumbsDownCount;
+    document.getElementById('summary-avg-time').innerText = `${avgTime}s`;
 
-        function startTimer() {
-            clearInterval(sessionState.timerInterval);
-            sessionState.timerElapsedMs = 0;
-            sessionState.questionStartTime = Date.now();
+    // Populate Detailed History
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '';
 
-            updateTimerUI(0);
+    sessionResults.forEach((res) => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      
+      const icon = res.result === 'up' ? '👍' : '👎';
+      
+      item.innerHTML = `
+        <span class="history-eq">${res.equation}</span>
+        <div class="history-meta">
+          <span class="history-time">${res.time.toFixed(1)}s</span>
+          <span>${icon}</span>
+        </div>
+      `;
+      historyList.appendChild(item);
+    });
+  }
 
-            sessionState.timerInterval = setInterval(() => {
-                sessionState.timerElapsedMs += 100;
+  function resetToSetup() {
+    showScreen('screen-setup');
+  }
 
-                updateTimerUI(sessionState.timerElapsedMs);
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+</script>
 
-                // Auto timeout at 10 seconds
-                if (sessionState.timerElapsedMs >= 10000) {
-                    clearInterval(sessionState.timerInterval);
-                    recordAnswer(false, 10.0); // Count as Thumbs Down
-                }
-            }, 100);
-        }
-
-        function updateTimerUI(elapsedMs) {
-            const currentSeconds = Math.min(10, Math.floor(elapsedMs / 1000) + 1);
-            document.getElementById('timer-counter').innerText = currentSeconds;
-
-            const progressPct = Math.min(100, (elapsedMs / 10000) * 100);
-            document.getElementById('timer-progress-bar').style.width = `${progressPct}%`;
-        }
-
-        function recordAnswer(isThumbsUp, exactTimeSec = null) {
-            clearInterval(sessionState.timerInterval);
-
-            // Calculate exact time spent
-            const timeTaken = exactTimeSec !== null ? exactTimeSec : ((Date.now() - sessionState.questionStartTime) / 1000);
-
-            sessionState.answers.push({
-                isCorrect: isThumbsUp,
-                timeSpentSeconds: timeTaken
-            });
-
-            // Move to next question immediately
-            showQuestion(sessionState.currentQuestionIndex + 1);
-        }
-
-        // --- SUMMARY & RESULTS ---
-
-        function finishSession() {
-            clearInterval(sessionState.timerInterval);
-
-            document.getElementById('screen-exercise').classList.add('hidden');
-            document.getElementById('header-session-info').classList.add('hidden');
-            document.getElementById('screen-summary').classList.remove('hidden');
-
-            const totalThumbsUp = sessionState.answers.filter(a => a.isCorrect).length;
-            const totalThumbsDown = sessionState.answers.filter(a => !a.isCorrect).length;
-
-            const totalTime = sessionState.answers.reduce((acc, curr) => acc + curr.timeSpentSeconds, 0);
-            const avgTime = sessionState.answers.length > 0 ? (totalTime / sessionState.answers.length).toFixed(1) : "0.0";
-
-            document.getElementById('summary-thumbs-up').innerText = totalThumbsUp;
-            document.getElementById('summary-thumbs-down').innerText = totalThumbsDown;
-            document.getElementById('summary-avg-time').innerText = `${avgTime} s`;
-
-            if (totalThumbsUp > totalThumbsDown) {
-                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
-            }
-        }
-
-        function resetToHome() {
-            clearInterval(sessionState.timerInterval);
-            document.getElementById('screen-exercise').classList.add('hidden');
-            document.getElementById('screen-summary').classList.add('hidden');
-            document.getElementById('header-session-info').classList.add('hidden');
-            document.getElementById('screen-setup').classList.remove('hidden');
-        }
-    </script>
 </body>
 </html>
